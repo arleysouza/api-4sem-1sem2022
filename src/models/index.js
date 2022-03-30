@@ -1,7 +1,8 @@
 const Propriedade = require("./Propriedade");
-//const Registro = require("./Registro");
+const Registro = require("./Registro");
 const Talhao = require("./Talhao");
 const Usuario = require("./Usuario");
+const Amostra = require("./Amostra");
 
 const database = require("../database");
 
@@ -14,18 +15,6 @@ Usuario.hasMany(Propriedade, {
 	onDelete: "cascade",
 	onUpdate: "cascade",
 	hooks: true, //usado para forçar o cascade no onDelete
-	validate: {
-		notNull: {
-			msg: "Forneça a identificação do usuario",
-		},
-		foreignkey: async (idusuario, next) => {
-			const usuario = await Usuario.findOne({ where: { idusuario } });
-			if( usuario === null ){
-				return next(`Usuário ${idusuario} não identificado`);
-			}
-			return next();
-		}
-	}
 });
 Propriedade.belongsTo(Usuario, {foreignKey: "idusuario", targetKey: "idusuario"});
 
@@ -38,26 +27,40 @@ Propriedade.hasMany(Talhao, {
 	onDelete: "cascade",
 	onUpdate: "cascade",
 	hooks: true, //usado para forçar o cascade no onDelete
-	validate: {
-		notNull: {
-			msg: "Forneça a identificação da propriedade",
-		},
-		foreignkey: async (idpropriedade, next) => {
-			const propriedade = await Propriedade.findOne({ where: { idpropriedade } });
-			if( propriedade === null ){
-				return next(`Propriedade ${idpropriedade} não identificada`);
-			}
-			return next();
-		}
-	}
 });
 Talhao.belongsTo(Propriedade, {foreignKey: "idpropriedade", targetKey: "idpropriedade"});
 
+Talhao.hasMany(Registro, {
+	foreignKey: {
+		name: "idtalhao",
+		allowNull: false
+	},
+	sourceKey: "idtalhao",
+	onDelete: "cascade",
+	onUpdate: "cascade",
+	hooks: true, //usado para forçar o cascade no onDelete
+});
+Registro.belongsTo(Talhao, {foreignKey: "idtalhao", targetKey: "idtalhao"});
+
+Registro.hasMany(Amostra, {
+	foreignKey: {
+		name: "idregistro",
+		allowNull: false
+	},
+	sourceKey: "idregistro",
+	onDelete: "cascade",
+	onUpdate: "cascade",
+	hooks: true, //usado para forçar o cascade no onDelete
+});
+Amostra.belongsTo(Registro, {foreignKey: "idregistro", targetKey: "idregistro"});
+
+//database.sync({force:true});
 database.sync();
 
 module.exports = {
 	Propriedade,
-	//Registro,
+	Registro,
 	Talhao,
-	Usuario
+	Usuario,
+	Amostra
 };

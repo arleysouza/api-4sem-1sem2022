@@ -1,13 +1,12 @@
 const { DataTypes } = require("sequelize");
 const database = require("../database");
-const Talhao = require("./Talhao");
 
 const Registro = database.define(
-	"talhao",
+	"registro",
 	{
 		idregistro: {
-			type: DataTypes.INTEGER,
-			autoIncrement: true,
+			type: DataTypes.UUID,
+			defaultValue: DataTypes.UUIDV4,
 			allowNull: false,
 			primaryKey: true,
 		},
@@ -15,37 +14,14 @@ const Registro = database.define(
 			type: DataTypes.DATEONLY,
 			allowNull: false,
 			validate: {
-				notNull: {
+				notEmpty: {
 					msg: "Forneça a data de coleta",
 				},
 				isDate: {
 					msg: "A data precisa estar no formato AAAA-MM-DD"
 				}
 			},
-		},
-		idtalhao: {
-			type: DataTypes.INTEGER,
-			allowNull: false,
-			references: {
-				model: Talhao,
-				key: "idtalhao",
-			},
-			onDelete: "restrict",
-			onUpdate: "cascade",
-			hooks: true,
-			validate: {
-				notNull: {
-					msg: "Forneça a identificação do talhão",
-				},
-				foreignkey: async (idtalhao, next) => {
-					const talhao = await Talhao.findOne({ where: { idtalhao } });
-					if( talhao === null ){
-						return next(`Talhão ${idtalhao} não identificado`);
-					}
-					return next();
-				}
-			}
-		},
+		}
 	},
 	{
 		freezeTableName: true,

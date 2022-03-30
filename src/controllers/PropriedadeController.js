@@ -14,7 +14,7 @@ class PropriedadeController {
 			})
 			.catch((err) => {
 				// pega os erros de validação emitidos pelo modelo do Sequelize
-				if( err.errors.length > 0 ){
+				if( err.errors && err.errors.length > 0 ){
 					return res.status(400).json({ error: err.errors[0].message });
 				}
 				else{
@@ -28,7 +28,7 @@ class PropriedadeController {
 		const {idusuario} =  await getToken(req);
 		let { idpropriedade, nome } = req.body;
 		nome = (nome || "").toString().trim();
-		idpropriedade = (idpropriedade || "").toString().replace(/[^\d]+/g, "");
+		idpropriedade = (idpropriedade || "").toString();
 		if( idpropriedade === "" ){
 			return res.status(400).json({ error: "Forneça a identificação da propriedade" });
 		}
@@ -42,7 +42,7 @@ class PropriedadeController {
 				return res.status(400).json({ error: "Propriedade não identificada" });
 			})
 			.catch((err) => {
-				if( err.errors.length > 0 ){
+				if( err.errors && err.errors.length > 0 ){
 					return res.status(400).json({ error: err.errors[0].message });
 				}
 				else{
@@ -54,7 +54,7 @@ class PropriedadeController {
 	async remove(req, res) {
 		const { idusuario } = await getToken(req);
 		let { idpropriedade } = req.body;
-		idpropriedade = (idpropriedade || "").toString().replace(/[^\d]+/g, "");
+		idpropriedade = (idpropriedade || "").toString();
 		if( idpropriedade === "" ){
 			return res.status(400).json({ error: "Forneça a identificação da propriedade" });
 		}
@@ -69,7 +69,7 @@ class PropriedadeController {
 				}
 			})
 			.catch((err) => {
-				if( err.errors.length > 0 ){
+				if( err.errors && err.errors.length > 0 ){
 					return res.status(400).json({ error: err.errors[0].message });
 				}
 				else{

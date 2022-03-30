@@ -17,4 +17,13 @@ try {
 } catch (e) {
 	console.log(e.message);
 }
+
+/*
+// use se desejar testar no SQLite
+const database = new Sequelize({
+	dialect: "sqlite",
+	storage: "banco.db",
+	logging: false,
+});
+*/
 module.exports = database;

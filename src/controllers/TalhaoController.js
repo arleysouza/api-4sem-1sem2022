@@ -5,7 +5,7 @@ class TalhaoController {
 	async create(req, res) {
 		const {idusuario} = await getToken(req);
 		let { idpropriedade, nome, geom } = req.body;
-		idpropriedade = (idpropriedade || "").toString().replace(/[^\d]+/g, "");
+		idpropriedade = (idpropriedade || "").toString();
 		nome = (nome || "").toString().trim();
 		geom = (geom || "").toString().trim();
 		if( idpropriedade === "" ){
@@ -22,7 +22,7 @@ class TalhaoController {
 							return res.json({ idpropriedade, nome, geom });
 						})
 						.catch((err) => {
-							if( err.errors.length > 0 ){
+							if( err.errors && err.errors.length > 0 ){
 								return res.status(400).json({ error: err.errors[0].message });
 							}
 							else{
@@ -39,10 +39,9 @@ class TalhaoController {
 	}
 
 	async update(req, res) {
-		const {idusuario} = await getToken(req);
 		let { idtalhao, idpropriedade, nome, geom } = req.body;
-		idtalhao = (idtalhao || "").toString().replace(/[^\d]+/g, "");
-		idpropriedade = (idpropriedade || "").toString().replace(/[^\d]+/g, "");
+		idtalhao = (idtalhao || "").toString();
+		idpropriedade = (idpropriedade || "").toString();
 		nome = (nome || "").toString().trim();
 		geom = (geom || "").toString().trim();
 		if( idtalhao === "" ){
@@ -52,62 +51,46 @@ class TalhaoController {
 			return res.status(400).json({ error: "Forneça a identificação da propriedade" });
 		}
 
-		//verifica se o talhão pertence a uma propriedade do usuário
-		return await Talhao.findOne({
-			where: { idtalhao },
-			include: [
-				{
-					model: Propriedade,
-					where: {idusuario}
-				}
-			]
-		 })
+		return await Talhao.findOne({ where: { idtalhao} })
 			.then( async talhao => {
 				if( talhao ){
-					//verifica se a nova propriedade pertence ao usuário
-					const propriedade = await Propriedade.findOne({ where: { idpropriedade, idusuario } });
+					//verifica se a propriedade existe
+					const propriedade = await Propriedade.findOne({where:{idpropriedade}});
 					if( propriedade ){
 						await talhao.update({ idpropriedade, nome, geom });
 						return res.json({idtalhao, idpropriedade, nome, geom});
 					}
-					else
-						return res.status(400).json({ error: "A propriedade não foi identificada" });
+					return res.status(400).json({ error: "Propriedade não identificada" });
 				}
-				else
-					return res.status(400).json({ error: "O talhão não foi identificado" });
+				return res.status(400).json({ error: "Talhão não identificado" });
 			})
 			.catch((err) => {
-				return res.status(400).json({ error: err.message });
-		  });
+				if( err.errors && err.errors.length > 0 ){
+					return res.status(400).json({ error: err.errors[0].message });
+				}
+				else{
+					return res.status(400).json({ error: err.message });
+				}
+			  });
 	}
 
 	async remove(req, res) {
-		const { idusuario } = await getToken(req);
 		let { idtalhao } = req.body;
-		idtalhao = (idtalhao || "").toString().replace(/[^\d]+/g, "");
+		idtalhao = (idtalhao || "").toString();
 		if( idtalhao === "" ){
 			return res.status(400).json({ error: "Forneça a identificação do talhão" });
 		}
 
-		return await Talhao.findOne({
-			where: { idtalhao },
-			include: [
-				{
-					model: Propriedade,
-					where: {idusuario}
-				}
-			]
-		})
+		return await Talhao.findOne({where: { idtalhao }})
 			.then(async (talhao) => {
-				if (talhao !== null) {
+				if (talhao) {
 					await talhao.destroy();
 					return res.json({ idtalhao, nome:talhao.nome });
-				} else {
-					return res.status(400).json({ error: "Talhão não identificado" });
 				}
+				return res.status(400).json({ error: "Talhão não identificado" });
 			})
 			.catch((err) => {
-				if( err.errors.length > 0 ){
+				if( err.errors && err.errors.length > 0 ){
 					return res.status(400).json({ error: err.errors[0].message });
 				}
 				else{
@@ -117,9 +100,8 @@ class TalhaoController {
 	}
 
 	async list(req, res) {
-		const {idusuario} = await getToken(req);
 		let { idpropriedade, limit, offset } = req.body;
-		idpropriedade = (idpropriedade || "").toString().replace(/[^\d]+/g, "");
+		idpropriedade = (idpropriedade || "").toString();
 		if( idpropriedade === "" ){
 			return res.status(400).json({ error: "Forneça a identificação da propriedade" });
 		}
@@ -129,14 +111,7 @@ class TalhaoController {
 			attributes: ["idpropriedade", "idtalhao", "nome", "geom"],
 			order: [["nome", "ASC"]],
 			offset,
-			limit,
-			include: [
-				{
-					model: Propriedade,
-					where: {idusuario},
-					attributes: []
-				}
-			]
+			limit
 		})
 			.then((talhoes) => {
 				return res.json({

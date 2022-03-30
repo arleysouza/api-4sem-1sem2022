@@ -57,7 +57,7 @@ class UsuarioController {
 			})
 			.catch((err) => {
 				// pega os erros de validação emitidos pelo modelo do Sequelize
-				if( err.errors.length > 0 ){
+				if( err.errors && err.errors.length > 0 ){
 					return res.status(400).json({ error: err.errors[0].message });
 				}
 				else{
@@ -81,7 +81,7 @@ class UsuarioController {
 				return res.status(400).json({ error: "Usuário não identificado" });
 			})
 			.catch((err) => {
-				if( err.errors.length > 0 ){
+				if( err.errors && err.errors.length > 0 ){
 					return res.status(400).json({ error: err.errors[0].message });
 				}
 				else{
@@ -109,7 +109,7 @@ class UsuarioController {
 				return res.status(400).json({ error: "Usuário não identificado" });
 			})
 			.catch((err) => {
-				if( err.errors.length > 0 ){
+				if( err.errors && err.errors.length > 0 ){
 					return res.status(400).json({ error: err.errors[0].message });
 				}
 				else{

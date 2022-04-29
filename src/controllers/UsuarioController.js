@@ -53,7 +53,11 @@ class UsuarioController {
 		return await Usuario.create({ mail, senha })
 			.then(async (r) => {
 				const { idusuario, mail } = r.get();
-				return res.status(200).json({ idusuario, mail });
+
+				//cria o token de login do usuário
+				const token = await generateToken({idusuario, mail});
+
+				return res.status(200).json({ idusuario, mail, token });
 			})
 			.catch((err) => {
 				// pega os erros de validação emitidos pelo modelo do Sequelize

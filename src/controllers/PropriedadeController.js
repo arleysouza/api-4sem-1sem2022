@@ -7,13 +7,28 @@ class PropriedadeController {
 		let { nome } = req.body;
 		nome = (nome || "").toString().trim();
 
-		return await Propriedade.create({idusuario,nome})
+		//verifica se o usuário já possui uma propriedade com o mesmo nome
+		return await Propriedade.findOne({ where: { idusuario, nome } })
 			.then(async (propriedade) => {
-				const { idpropriedade, nome } = propriedade.get();
-				return res.json({ idpropriedade, nome });
+				if (propriedade) {
+					return res.status(400).json({ error: `Você já possui uma propriedade de nome ${nome}` });
+				}
+				return await Propriedade.create({idusuario,nome})
+				.then(async (propriedade) => {
+					const { idpropriedade, nome } = propriedade.get();
+					return res.json({ idpropriedade, nome });
+				})
+				.catch((err) => {
+					// pega os erros de validação emitidos pelo modelo do Sequelize
+					if( err.errors && err.errors.length > 0 ){
+						return res.status(400).json({ error: err.errors[0].message });
+					}
+					else{
+						return res.status(400).json({ error: err.message });
+					}
+				});
 			})
 			.catch((err) => {
-				// pega os erros de validação emitidos pelo modelo do Sequelize
 				if( err.errors && err.errors.length > 0 ){
 					return res.status(400).json({ error: err.errors[0].message });
 				}
